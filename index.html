@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FBF6EE">
+<title>Voice messages for Lindsay Holland</title>
+<style>
+  :root {
+    --bg: #FBF6EE;
+    --card: #FFFFFF;
+    --text: #1F1A17;
+    --muted: #463C35;
+    --line: #D9CBBB;
+    --accent: #A23B1C;        /* warm terracotta — white text on it passes WCAG AA */
+    --accent-dark: #7E2C13;
+    --rec: #B3202A;
+    --paused-bg: #FFE9A8;
+    --paused-text: #5C3B00;
+    --ok: #1E6B3A;
+    --focus: #1A56DB;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 20px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; line-height: 1.2; }
+  h1 { font-size: 2rem; margin: 18px 0 12px; text-align: center; }
+  h2 { font-size: 1.4rem; margin: 0 0 14px; }
+  [hidden] { display: none !important; }
+
+  .photo-wrap { display: flex; justify-content: center; }
+  .photo, .photo-placeholder {
+    width: 210px; height: 210px; border-radius: 50%; object-fit: cover;
+    border: 6px solid #fff; box-shadow: 0 4px 18px rgba(60, 30, 10, .18);
+    background: #F1E3D3;
+  }
+  .photo-placeholder { display: flex; align-items: center; justify-content: center; font-size: 4rem; color: var(--accent); }
+  .intro { font-size: 1.1rem; margin: 0 0 24px; }
+
+  .card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 18px;
+    padding: 20px; margin: 0 0 20px;
+  }
+  label { display: block; font-weight: 700; margin: 0 0 6px; }
+  .hint { font-weight: 400; color: var(--muted); font-size: .95rem; }
+  input[type=text] {
+    width: 100%; font: inherit; font-size: 1.15rem; padding: 14px 16px; min-height: 60px;
+    border: 2px solid #6B5E55; border-radius: 12px; background: #fff; color: var(--text);
+    margin-bottom: 18px;
+  }
+  input[type=text]:last-of-type { margin-bottom: 0; }
+  input.invalid { border-color: var(--rec); border-width: 3px; }
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+  button, .file-label {
+    font: inherit; font-weight: 700; font-size: 1.3rem; cursor: pointer;
+    min-height: 68px; width: 100%; border-radius: 16px; padding: 12px 20px;
+    border: 3px solid transparent; display: flex; align-items: center; justify-content: center; gap: 12px;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  button:focus-visible, input:focus-visible, .file-label:focus-within, summary:focus-visible {
+    outline: 4px solid var(--focus); outline-offset: 3px;
+  }
+  button:disabled { opacity: .55; cursor: default; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:active { background: var(--accent-dark); }
+  .btn-record { background: var(--rec); color: #fff; min-height: 96px; font-size: 1.6rem; }
+  .btn-secondary { background: #fff; color: var(--text); border-color: var(--text); }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .stack > * + * { margin-top: 12px; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; background: #fff; flex: none; }
+  .square { width: 20px; height: 20px; background: currentColor; flex: none; }
+
+  .status {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-weight: 800; font-size: 1.25rem; border-radius: 999px; padding: 10px 18px; margin: 0 auto 8px;
+    width: fit-content;
+  }
+  .status.recording { background: #FCE4E4; color: var(--rec); }
+  .status.recording .live { width: 16px; height: 16px; border-radius: 50%; background: var(--rec); animation: pulse 1.2s infinite; }
+  .status.paused { background: var(--paused-bg); color: var(--paused-text); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) {
+    .status.recording .live, .status.paused { animation: none; }
+  }
+
+  .clock { text-align: center; font-size: 3.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .clock-label { text-align: center; color: var(--muted); margin-bottom: 10px; }
+  .bar { height: 14px; background: #EFE4D7; border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .2s linear; }
+
+  audio { width: 100%; margin: 6px 0 4px; }
+  .note { color: var(--muted); font-size: 1rem; margin: 10px 0 0; }
+  .center { text-align: center; }
+
+  .error {
+    background: #FCE4E4; border: 2px solid var(--rec); color: #6E0F15; border-radius: 14px;
+    padding: 14px 16px; margin: 0 0 16px; font-weight: 600;
+  }
+  .help { background: #FFF6DD; border: 2px solid #E0B44C; border-radius: 14px; padding: 16px; margin-top: 16px; }
+  .help h3 { margin: 0 0 8px; font-size: 1.15rem; }
+  .help ol { margin: 0 0 12px; padding-left: 1.4em; }
+  .help li { margin-bottom: 4px; }
+
+  details { margin-top: 4px; }
+  summary { font-weight: 700; cursor: pointer; padding: 8px 0; color: var(--accent-dark); text-decoration: underline; }
+  .file-label { background: #fff; border-color: var(--text); color: var(--text); margin-top: 10px; }
+  .file-label input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+  .done { text-align: center; }
+  .done .big-heart { font-size: 4rem; color: var(--accent); line-height: 1; }
+  footer { text-align: center; color: var(--muted); font-size: .95rem; margin-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header>
+    <div class="photo-wrap">
+      <img id="photo" class="photo" alt="Lindsay Holland" hidden>
+      <div id="photoPlaceholder" class="photo-placeholder" aria-hidden="true">&#9829;</div>
+    </div>
+
+    <h1>Leave a voice message for Lindsay</h1>
+
+    <!-- ============================================================
+         INTRO TEXT — edit the words between <p ...> and </p> below
+         ============================================================ -->
+    <p class="intro">Friends and family are gathering voice messages to send Lindsay love and encouragement. This is not a goodbye. Find a quiet spot, tap Record, and share a favorite memory, a few kind words, or just say hello in under 60 seconds — you can pause, listen back, and re-record before you send.</p>
+    <!-- ======================= END OF INTRO TEXT ================= -->
+  </header>
+
+  <div id="error" class="error" role="alert" hidden></div>
+
+  <!-- STEP 1: who you are -->
+  <section class="card" id="aboutCard" aria-labelledby="step1">
+    <h2 id="step1">Step 1 — About you</h2>
+    <label for="name">Your name <span class="hint">(required)</span></label>
+    <input type="text" id="name" autocomplete="name" autocapitalize="words" maxlength="60" required>
+    <label for="relationship">How do you know Lindsay? <span class="hint">(optional)</span></label>
+    <input type="text" id="relationship" autocapitalize="sentences" maxlength="80" placeholder="e.g. college roommate">
+    <!-- Spam trap: hidden from people, bots fill it in. -->
+    <div class="hp" aria-hidden="true">
+      <label for="website">Website</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+  </section>
+
+  <!-- STEP 2: record -->
+  <section class="card" id="recordCard" aria-labelledby="step2">
+    <h2 id="step2">Step 2 — Record your message</h2>
+
+    <!-- Ready to record -->
+    <div data-state="ready">
+      <button type="button" id="recordBtn" class="btn-record"><span class="dot"></span>Record</button>
+      <p class="note center">Your phone will ask to use the microphone. Tap <strong>Allow</strong>.</p>
+    </div>
+
+    <!-- Recording / paused -->
+    <div data-state="recording" hidden>
+      <div id="status" class="status recording" aria-live="assertive"><span class="live"></span><span id="statusText">Recording</span></div>
+      <div class="clock" id="clock">1:00</div>
+      <div class="clock-label">seconds left</div>
+      <div class="bar"><div id="timeBar"></div></div>
+      <div class="btn-row" id="recButtons">
+        <button type="button" id="pauseBtn" class="btn-secondary">Pause</button>
+        <button type="button" id="stopBtn" class="btn-primary"><span class="square"></span>Stop</button>
+      </div>
+    </div>
+
+    <!-- Listen back -->
+    <div data-state="review" hidden>
+      <p id="reviewNote" class="note" style="margin-top:0"></p>
+      <p style="margin:0 0 4px;font-weight:700">Listen to your message:</p>
+      <audio id="player" controls preload="metadata"></audio>
+      <div class="stack" style="margin-top:14px">
+        <button type="button" id="sendBtn" class="btn-primary">Send to Lindsay</button>
+        <button type="button" id="againBtn" class="btn-secondary">Record again</button>
+      </div>
+    </div>
+
+    <!-- Sending -->
+    <div data-state="sending" hidden>
+      <p class="center" style="font-weight:700;margin-top:0" id="sendText" aria-live="polite">Sending your message…</p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="sendBarWrap"><div id="sendBar"></div></div>
+      <p class="note center" id="sendPct">0%</p>
+      <p class="note center">Please keep this page open until it says thank you.</p>
+    </div>
+
+    <!-- Microphone help (shown when the mic is blocked) -->
+    <div id="micHelp" class="help" hidden>
+      <h3>The microphone is turned off for this page</h3>
+      <p style="margin:0 0 10px">That's OK! Here's how to turn it on, then tap Record again.</p>
+      <h3>On an iPhone (Safari)</h3>
+      <ol>
+        <li>Tap the <strong>aA</strong> button (or the small page icon) at the left of the web address.</li>
+        <li>Tap <strong>Website Settings</strong>.</li>
+        <li>Set <strong>Microphone</strong> to <strong>Allow</strong>, then tap <strong>Done</strong>.</li>
+        <li>Reload the page and tap <strong>Record</strong>.</li>
+      </ol>
+      <p class="note" style="margin:0 0 12px">Still blocked? Open the <strong>Settings</strong> app → <strong>Apps</strong> → <strong>Safari</strong> (older iPhones: Settings → Safari) → <strong>Microphone</strong> → <strong>Ask</strong> or <strong>Allow</strong>.</p>
+      <h3>On an Android phone (Chrome)</h3>
+      <ol>
+        <li>Tap the icon at the left of the web address (it looks like a lock or two sliders).</li>
+        <li>Tap <strong>Permissions</strong> (or <strong>Site settings</strong>).</li>
+        <li>Turn <strong>Microphone</strong> on / set it to <strong>Allow</strong>.</li>
+        <li>Reload the page and tap <strong>Record</strong>.</li>
+      </ol>
+      <p class="note" style="margin:0 0 12px">Still blocked? Open <strong>Settings</strong> → <strong>Apps</strong> → <strong>Chrome</strong> → <strong>Permissions</strong> → <strong>Microphone</strong> → <strong>Allow</strong>.</p>
+      <p class="note" style="margin:0">Opened this from Facebook, Instagram or another app? Tap the <strong>•••</strong> menu and choose <strong>Open in Safari</strong> or <strong>Open in Chrome</strong>.
+        Or use <strong>“Upload a voice memo instead”</strong> below.</p>
+    </div>
+
+    <!-- Upload fallback -->
+    <details id="uploadBox" style="margin-top:16px">
+      <summary>Can't record here? Upload a voice memo instead</summary>
+      <p class="note">Record a voice memo with your phone's Voice Memos or Recorder app (under 60 seconds), then choose it here.</p>
+      <label class="file-label" for="fileInput">Choose a voice memo
+        <input type="file" id="fileInput" accept="audio/*">
+      </label>
+    </details>
+  </section>
+
+  <!-- Thank you -->
+  <section class="card done" id="doneCard" hidden aria-live="polite">
+    <div class="big-heart" aria-hidden="true">&#9829;</div>
+    <h2 id="thanksTitle">Thank you!</h2>
+    <p>Your voice message has been saved for Lindsay. It will mean so much.</p>
+    <button type="button" id="anotherBtn" class="btn-secondary">Leave another message</button>
+  </section>
+
+  <footer>With love for Lindsay Holland.<br>Your message is saved privately for Lindsay's family — it is not posted publicly.</footer>
+</main>
+
+<script>
+/* ==============================================================
+   SETTINGS
+   ============================================================== */
+var CONFIG = {
+  // Paste your Apps Script "Web app URL" here (it ends in /exec):
+  SCRIPT_URL: 'PASTE_YOUR_WEB_APP_URL_HERE',
+  PERSON: 'Lindsay',
+  MAX_SECONDS: 60,     // hard limit on recorded time
+  MAX_UPLOAD_MB: 12    // must match MAX_AUDIO_MB in Code.gs
+};
+/* ============================================================== */
+
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var LIMIT_MS = CONFIG.MAX_SECONDS * 1000;
+
+  var stream = null, recorder = null, chunks = [];
+  var recordedMs = 0, segmentStart = 0, tickTimer = null, limitTimer = null, autoStopped = false, discardOnStop = false;
+  var audioBlob = null, audioUrl = null, audioMime = '', audioSeconds = 0, source = 'recorded', originalName = '';
+  var sent = false, fakeTimer = null;
+
+  var canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+
+  /* ---------- photo (read privately from Drive by the script) ---------- */
+  if (/^https?:/.test(CONFIG.SCRIPT_URL)) {
+    fetch(CONFIG.SCRIPT_URL + '?action=photo')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok && d.dataUrl) {
+          var img = $('photo');
+          img.onload = function () { img.hidden = false; $('photoPlaceholder').hidden = true; };
+          img.src = d.dataUrl;
+        }
+      })
+      .catch(function () { /* keep the heart placeholder */ });
+  }
+
+  /* ---------- helpers ---------- */
+  function showState(name) {
+    var all = document.querySelectorAll('[data-state]');
+    for (var i = 0; i < all.length; i++) all[i].hidden = all[i].getAttribute('data-state') !== name;
+    $('uploadBox').hidden = (name === 'recording' || name === 'sending');
+  }
+  function showError(msg) {
+    var e = $('error'); e.textContent = msg; e.hidden = false;
+    e.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function clearError() { $('error').hidden = true; $('name').classList.remove('invalid'); }
+  function fmt(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+  function pickMimeType() {
+    if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
+    // Chrome/Android -> webm, iPhone Safari -> mp4
+    var list = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg;codecs=opus'];
+    for (var i = 0; i < list.length; i++) if (MediaRecorder.isTypeSupported(list[i])) return list[i];
+    return '';
+  }
+  function guessMimeFromName(n) {
+    var ext = (String(n).toLowerCase().match(/\.([a-z0-9]+)$/) || [])[1] || '';
+    return ({ m4a: 'audio/mp4', mp4: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', webm: 'audio/webm',
+      ogg: 'audio/ogg', aac: 'audio/aac', caf: 'audio/x-caf', '3gp': 'audio/3gpp', amr: 'audio/amr', flac: 'audio/flac' })[ext] || '';
+  }
+  function stopStream() {
+    if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+  }
+  function clearAudio() {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    audioUrl = null; audioBlob = null; audioMime = ''; audioSeconds = 0; originalName = '';
+    $('player').removeAttribute('src'); $('player').load();
+  }
+
+  /* ---------- recording ---------- */
+  function elapsedMs() {
+    return recordedMs + (recorder && recorder.state === 'recording' ? performance.now() - segmentStart : 0);
+  }
+  function updateClock() {
+    var used = Math.min(elapsedMs(), LIMIT_MS);
+    $('clock').textContent = fmt(LIMIT_MS - used);
+    $('timeBar').style.width = (used / LIMIT_MS * 100) + '%';
+  }
+  function scheduleLimit() {
+    clearTimeout(limitTimer);
+    limitTimer = setTimeout(function () { stopRecording(true); }, Math.max(0, LIMIT_MS - elapsedMs()));
+  }
+  function setPausedUI(paused) {
+    var s = $('status');
+    s.className = 'status ' + (paused ? 'paused' : 'recording');
+    $('statusText').textContent = paused ? 'Paused — not recording' : 'Recording';
+    $('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+  }
+
+  function handleMicError(err) {
+    var n = err && err.name;
+    if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') {
+      $('micHelp').hidden = false;
+      $('uploadBox').open = true;
+      $('micHelp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (n === 'NotFoundError' || n === 'OverconstrainedError' || n === 'DevicesNotFoundError') {
+      showError("We couldn't find a microphone on this device. You can upload a voice memo instead (below).");
+      $('uploadBox').open = true;
+    } else if (n === 'NotReadableError' || n === 'TrackStartError') {
+      showError('Another app seems to be using the microphone (a phone or video call?). Close it and tap Record again.');
+    } else {
+      showError("The microphone couldn't start. Please try again, or upload a voice memo instead (below).");
+      $('uploadBox').open = true;
+    }
+  }
+
+  function startRecording() {
+    clearError();
+    if (!canRecord) {
+      showError("This browser can't record here. If you opened this link inside another app, tap ••• and choose “Open in Safari” or “Open in Chrome”. Or upload a voice memo instead (below).");
+      $('uploadBox').open = true;
+      return;
+    }
+    $('recordBtn').disabled = true;
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+      .then(function (s) {
+        stream = s;
+        $('micHelp').hidden = true;
+        var type = pickMimeType();
+        try { recorder = type ? new MediaRecorder(stream, { mimeType: type }) : new MediaRecorder(stream); }
+        catch (e) { recorder = new MediaRecorder(stream); }
+
+        chunks = []; recordedMs = 0; autoStopped = false; discardOnStop = false;
+        recorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        recorder.onstop = finishRecording;
+        recorder.start();               // one continuous recording; pause/resume keeps it one file
+        segmentStart = performance.now();
+
+        // Hide Pause if this browser can't pause a recording.
+        var canPause = typeof recorder.pause === 'function' && typeof recorder.resume === 'function';
+        $('pauseBtn').hidden = !canPause;
+        $('recButtons').style.gridTemplateColumns = canPause ? '1fr 1fr' : '1fr';
+
+        setPausedUI(false);
+        showState('recording');
+        updateClock();
+        tickTimer = setInterval(updateClock, 200);
+        scheduleLimit();
+      })
+      .catch(handleMicError)
+      .then(function () { $('recordBtn').disabled = false; });
+  }
+
+  function togglePause() {
+    if (!recorder) return;
+    try {
+      if (recorder.state === 'recording') {
+        var add = performance.now() - segmentStart;
+        recorder.pause();
+        recordedMs += add;              // the clock only counts time spent recording
+        clearTimeout(limitTimer);
+        setPausedUI(true);
+      } else if (recorder.state === 'paused') {
+        recorder.resume();
+        segmentStart = performance.now();
+        scheduleLimit();
+        setPausedUI(false);
+      }
+    } catch (e) {
+      $('pauseBtn').hidden = true;      // pause not really supported — keep recording
+      $('recButtons').style.gridTemplateColumns = '1fr';
+    }
+    updateClock();
+  }
+
+  function stopRecording(auto) {
+    if (!recorder || recorder.state === 'inactive') return;
+    if (recorder.state === 'recording') recordedMs += performance.now() - segmentStart;
+    recordedMs = Math.min(recordedMs, LIMIT_MS);
+    clearTimeout(limitTimer); clearInterval(tickTimer);
+    autoStopped = !!auto;
+    updateClock();
+    recorder.stop();
+  }
+
+  function finishRecording() {
+    var type = (recorder && recorder.mimeType) || (chunks[0] && chunks[0].type) || pickMimeType() || 'audio/webm';
+    var blob = new Blob(chunks, { type: type });
+    stopStream();
+    recorder = null;
+    if (discardOnStop) { discardOnStop = false; return; }
+    if (!blob.size) { showError("Nothing was recorded. Please tap Record and try again."); showState('ready'); return; }
+    clearAudio();
+    audioBlob = blob; audioMime = type; source = 'recorded';
+    audioSeconds = Math.max(1, Math.round(recordedMs / 1000));
+    showReview(autoStopped ? "Time's up — " + CONFIG.MAX_SECONDS + " seconds is the limit. Listen back below, then send it or record again." : '');
+  }
+
+  function cancelRecording() {
+    if (recorder && recorder.state !== 'inactive') {
+      discardOnStop = true;
+      clearTimeout(limitTimer); clearInterval(tickTimer);
+      recorder.stop();
+    }
+    stopStream();
+  }
+
+  /* ---------- listen back ---------- */
+  function showReview(note) {
+    audioUrl = URL.createObjectURL(audioBlob);
+    var p = $('player');
+    p.src = audioUrl; p.load();
+    $('reviewNote').textContent = note || '';
+    $('reviewNote').hidden = !note;
+    showState('review');
+  }
+  // Chrome's recordings don't store their length, which breaks the player's
+  // progress bar. This little trick makes the browser work the length out.
+  $('player').addEventListener('loadedmetadata', function () {
+    var p = this;
+    if (p.duration === Infinity || isNaN(p.duration)) {
+      p.currentTime = 1e7;
+      p.addEventListener('timeupdate', function back() {
+        p.removeEventListener('timeupdate', back);
+        p.currentTime = 0;
+      });
+    }
+  });
+
+  /* ---------- upload fallback ---------- */
+  function probeDuration(file) {
+    return new Promise(function (resolve) {
+      var a = document.createElement('audio'), url = URL.createObjectURL(file), done = false;
+      function finish(v) { if (done) return; done = true; URL.revokeObjectURL(url); resolve(v); }
+      a.preload = 'metadata';
+      a.onloadedmetadata = function () { finish(isFinite(a.duration) ? a.duration : null); };
+      a.onerror = function () { finish(null); };
+      setTimeout(function () { finish(null); }, 5000);
+      a.src = url;
+    });
+  }
+
+  $('fileInput').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    clearError();
+    cancelRecording();
+    var type = f.type || guessMimeFromName(f.name);
+    if (!/^(audio\/|video\/(mp4|webm|quicktime|3gpp))/.test(type)) {
+      showError('That doesn’t look like an audio file. Please choose a voice memo.');
+      return;
+    }
+    if (f.size > CONFIG.MAX_UPLOAD_MB * 1024 * 1024) {
+      showError('That file is too large. Please choose a voice memo under 60 seconds.');
+      return;
+    }
+    probeDuration(f).then(function (secs) {
+      if (secs && secs > CONFIG.MAX_SECONDS + 1.5) {
+        showError('That voice memo is ' + Math.round(secs) + ' seconds long. Please choose one under 60 seconds (or record here instead).');
+        return;
+      }
+      clearAudio();
+      audioBlob = f; audioMime = type; source = 'upload'; originalName = f.name;
+      audioSeconds = secs ? Math.round(secs) : 0;
+      showReview('Your voice memo is ready. Listen back, then tap Send.');
+    });
+  });
+
+  /* ---------- sending ---------- */
+  function setProgress(pct, text) {
+    pct = Math.round(pct);
+    $('sendBar').style.width = pct + '%';
+    $('sendBarWrap').setAttribute('aria-valuenow', pct);
+    $('sendPct').textContent = pct + '%';
+    if (text) $('sendText').textContent = text;
+  }
+  // Browsers can't report true upload progress to Google without extra
+  // permission checks, so the bar moves on an estimate based on file size
+  // and only reaches 100% once Google confirms the file is saved.
+  function startEstimatedProgress(bytes) {
+    var start = Date.now(), expected = 2500 + bytes / 60; // ~60 KB/s + Drive saving time
+    clearInterval(fakeTimer);
+    fakeTimer = setInterval(function () {
+      var t = Date.now() - start;
+      setProgress(15 + 80 * (1 - Math.exp(-t / expected)), t > expected ? 'Saving to Lindsay’s folder…' : null);
+    }, 150);
+  }
+  function blobToBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).split(',')[1] || ''); };
+      r.onerror = function () { reject(r.error); };
+      r.readAsDataURL(blob);
+    });
+  }
+
+  function send() {
+    clearError();
+    var name = $('name').value.trim();
+    if (!name) {
+      $('name').classList.add('invalid');
+      showError('Please type your name in Step 1 so Lindsay knows who the message is from.');
+      $('name').focus();
+      return;
+    }
+    if (!audioBlob) { showError('Please record a message first.'); return; }
+    if (!/^https?:/.test(CONFIG.SCRIPT_URL)) { showError('This page is not connected yet (missing SCRIPT_URL).'); return; }
+
+    // Spam trap filled in? Quietly pretend it worked.
+    if ($('website').value) { showThanks(name); return; }
+
+    showState('sending');
+    setProgress(5, 'Getting your message ready…');
+
+    blobToBase64(audioBlob).then(function (b64) {
+      setProgress(15, 'Sending your message…');
+      startEstimatedProgress(audioBlob.size);
+      var body = JSON.stringify({
+        name: name,
+        relationship: $('relationship').value.trim(),
+        website: $('website').value,
+        mimeType: audioMime,
+        originalName: originalName,
+        seconds: audioSeconds,
+        source: source,
+        audio: b64
+      });
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var timeout = setTimeout(function () { if (ctrl) ctrl.abort(); }, 120000);
+      // text/plain keeps this a "simple" request, so Google accepts it from this page.
+      return fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+        redirect: 'follow',
+        signal: ctrl ? ctrl.signal : undefined
+      }).then(function (r) { clearTimeout(timeout); return r.json(); });
+    }).then(function (res) {
+      clearInterval(fakeTimer);
+      if (!res || !res.ok) throw new Error((res && res.error) || 'Unknown error');
+      setProgress(100, 'Saved!');
+      setTimeout(function () { showThanks(name); }, 400);
+    }).catch(function (err) {
+      clearInterval(fakeTimer);
+      showState('review');
+      var msg = err && err.message && !/fetch|network|abort|load failed|json/i.test(err.message)
+        ? err.message
+        : 'We couldn’t send your message. Please check your internet connection.';
+      showError(msg + ' Your recording is still here — tap “Send to Lindsay” to try again.');
+    });
+  }
+
+  function showThanks(name) {
+    sent = true;
+    $('thanksTitle').textContent = 'Thank you, ' + name.split(' ')[0] + '!';
+    $('aboutCard').hidden = true; $('recordCard').hidden = true; $('doneCard').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function reset() {
+    clearAudio(); sent = false;
+    $('aboutCard').hidden = false; $('recordCard').hidden = false; $('doneCard').hidden = true;
+    showState('ready');
+  }
+
+  /* ---------- wiring ---------- */
+  $('recordBtn').addEventListener('click', startRecording);
+  $('pauseBtn').addEventListener('click', togglePause);
+  $('stopBtn').addEventListener('click', function () { stopRecording(false); });
+  $('sendBtn').addEventListener('click', send);
+  $('againBtn').addEventListener('click', function () { clearError(); clearAudio(); showState('ready'); });
+  $('anotherBtn').addEventListener('click', reset);
+  $('name').addEventListener('input', function () { this.classList.remove('invalid'); });
+
+  // If the phone locks or they switch apps mid-recording, pause instead of
+  // silently recording nothing.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && recorder && recorder.state === 'recording' && !$('pauseBtn').hidden) togglePause();
+  });
+  window.addEventListener('beforeunload', function (e) {
+    if ((audioBlob && !sent) || (recorder && recorder.state !== 'inactive')) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  showState('ready');
+})();
+</script>
+</body>
+</html>
