@@ -293,8 +293,8 @@ var CONFIG = {
   }
   function pickMimeType() {
     if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
-    // Chrome/Android -> webm, iPhone Safari -> mp4
-    var list = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg;codecs=opus'];
+    // Prefer m4a (plays on iPhone); webm only as a last resort.
+    var list = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus'];
     for (var i = 0; i < list.length; i++) if (MediaRecorder.isTypeSupported(list[i])) return list[i];
     return '';
   }
